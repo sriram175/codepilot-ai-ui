@@ -285,6 +285,7 @@ export default function RepositoryPage() {
                             messages={messages}
                             loading={loading}
                             onSend={handleSend}
+                            hasConversation={selectedConversationId !== null}
                         />
                     </div>
 

@@ -7,12 +7,14 @@ interface ChatWindowProps {
     messages: Message[];
     loading: boolean;
     onSend: (question: string) => void;
+    hasConversation: boolean;
 }
 
 export default function ChatWindow({
     messages,
     loading,
     onSend,
+    hasConversation,
 }: ChatWindowProps) {
 
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -102,7 +104,7 @@ export default function ChatWindow({
 
             <MessageInput
                 onSend={onSend}
-                disabled={loading}
+                disabled={loading || !hasConversation}
             />
 
         </div>
