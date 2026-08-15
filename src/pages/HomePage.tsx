@@ -14,17 +14,40 @@ export default function HomePage() {
     const [repositories, setRepositories] = useState<Repository[]>([]);
     const [repositoryUrl, setRepositoryUrl] = useState("");
     const [isAdding, setIsAdding] = useState(false);
+    const [isLoadingRepositories, setIsLoadingRepositories] = useState(true);
 
     useEffect(() => {
-        loadRepositories();
+        async function load() {
+            setIsLoadingRepositories(true);
+            await loadRepositories();
+            setIsLoadingRepositories(false);
+        }
+
+        load();
     }, []);
 
-    async function loadRepositories() {
+    async function loadRepositories(retries = 3) {
         try {
             const data = await getRepositories();
             setRepositories(data);
+            return true;
         } catch (error) {
             console.error("Failed to load repositories", error);
+
+            if (retries > 0) {
+                console.log(
+                    `Retrying repository request... attempts left: ${retries}`
+                );
+
+                await new Promise(resolve =>
+                    setTimeout(resolve, 3000)
+                );
+
+                return loadRepositories(retries - 1);
+            }
+
+            toast.error("Failed to load repositories.");
+            return false;
         }
     }
     async function handleAddRepository() {
@@ -108,13 +131,19 @@ export default function HomePage() {
             </div>
 
             <div className="grid gap-4 mt-8">
-                {repositories.map((repository) => (
-                    <RepositoryCard
-                        key={repository.repositoryId}
-                        repository={repository}
-                        onDelete={handleDeleteRepository}
-                    />
-                ))}
+                {isLoadingRepositories ? (
+                    <p className="text-gray-500">
+                        Loading repositories...
+                    </p>
+                ) : (
+                    repositories.map((repository) => (
+                        <RepositoryCard
+                            key={repository.repositoryId}
+                            repository={repository}
+                            onDelete={handleDeleteRepository}
+                        />
+                    ))
+                )}
             </div>
         </div>
     );
